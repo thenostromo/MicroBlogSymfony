@@ -8,6 +8,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\Session\Flash\FlashBagInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Repository\MicroPostRepository;
 use App\Entity\MicroPost;
@@ -43,16 +44,30 @@ class MicroPostController
      */
     private $router;
 
+    /**
+     * @var FlashBagInterface
+     */
+    private $flashBag;
+
+    /**
+     * @param \Twig_Environment $twig
+     * @param MicroPostRepository $microPostRepository
+     * @param FormFactoryInterface $formFactory
+     * @param EntityManagerInterface $entityManager
+     * @param RouterInterface $router
+     * @param FlashBagInterface $flashBag
+     */
     public function __construct(
         \Twig_Environment $twig, MicroPostRepository $microPostRepository,
         FormFactoryInterface $formFactory, EntityManagerInterface $entityManager,
-        RouterInterface $router
+        RouterInterface $router, FlashBagInterface $flashBag
     ) {
         $this->twig = $twig;
         $this->microPostRepository = $microPostRepository;
         $this->formFactory = $formFactory;
         $this->entityManager = $entityManager;
         $this->router = $router;
+        $this->flashBag = $flashBag;
     }
 
     /**
@@ -87,6 +102,23 @@ class MicroPostController
             $this->twig->render('micro-post/add.html.twig', [
                 'form' => $form->createView()
             ])
+        );
+    }
+
+    /**
+     * @Route("/delete/{id}", name="micro_post_delete")
+     * @param MicroPost $microPost
+     * @return Response
+     */
+    public function delete(MicroPost $microPost)
+    {
+        $this->entityManager->remove($microPost);
+        $this->entityManager->flush();
+
+        $this->flashBag->add('notice', 'Micro post was deleted');
+
+        return new RedirectResponse(
+            $this->router->generate('micro_post_index')
         );
     }
 
