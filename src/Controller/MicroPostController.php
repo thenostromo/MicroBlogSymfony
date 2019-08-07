@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\User;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
@@ -14,6 +15,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use App\Repository\MicroPostRepository;
 use App\Entity\MicroPost;
 use App\Form\MicroPostType;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 
@@ -135,13 +137,17 @@ class MicroPostController
 
     /**
      * @Route("/add", name="micro_post_add")
+     * @Security("is_granted('ROLE_USER')")
      * @param Request $request
+     * @param TokenStorageInterface $tokenStorage
      * @return Response
      */
-    public function add(Request $request)
+    public function add(Request $request, TokenStorageInterface $tokenStorage)
     {
+        $user = $tokenStorage->getToken()->getUser();
+
         $microPost = new MicroPost();
-        $microPost->setTime(new \DateTime());
+        $microPost->setUser($user);
 
         $form = $this->formFactory->create(MicroPostType::class, $microPost);
         $form->handleRequest($request);
@@ -156,6 +162,18 @@ class MicroPostController
                 'form' => $form->createView()
             ])
         );
+    }
+
+    /**
+     * @Route("/user/{username}", name="micro_post_user")
+     */
+    public function userPosts(User $userWithPosts)
+    {
+        $html = $this->twig->render('micro-post/index.html.twig', [
+            'posts' => $userWithPosts->getPosts()
+        ]);
+
+        return new Response($html);
     }
 
     /**
