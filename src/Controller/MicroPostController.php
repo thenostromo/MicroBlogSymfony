@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\User;
+use App\Repository\UserRepository;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
@@ -85,13 +86,34 @@ class MicroPostController
      * @Route("/", name="micro_post_index")
      * @return Response
      */
-    public function index()
+    public function index(TokenStorageInterface $tokenStorage, UserRepository $userRepository)
     {
-        $html = $this->twig->render('micro-post/index.html.twig', [
-            'posts' => $this->microPostRepository->findBy([], ['time' => 'DESC'])
-        ]);
+        $currentUser = $tokenStorage->getToken()
+            ->getUser();
+        $usersToFollow = [];
 
-        return new Response($html);
+        if ($currentUser instanceof User) {
+            $posts = $this->microPostRepository->findAllByUsers(
+                $currentUser->getFollowing()
+            );
+
+            $usersToFollow = count($posts) === 0 ?
+                $userRepository->findAllWithMoreThan5PostsExceptUser($currentUser) : [];
+        } else {
+            $posts = $this->microPostRepository->findBy(
+                [],
+                ['time' => 'DESC']
+            );
+        }
+        return new Response(
+            $this->twig->render(
+                'micro-post/index.html.twig',
+                [
+                    'posts' => $posts,
+                    'usersToFollow' => $usersToFollow
+                ]
+            )
+        );
     }
 
     /**
@@ -108,7 +130,9 @@ class MicroPostController
         if ($form->isSubmitted() && $form->isValid()) {
             $this->entityManager->flush();
 
-            return new RedirectResponse($this->router->generate('micro_post_index'));
+            return new RedirectResponse(
+                $this->router->generate('micro_post_index')
+            );
         }
         return new Response(
             $this->twig->render('micro-post/add.html.twig', [
@@ -155,12 +179,17 @@ class MicroPostController
             $this->entityManager->persist($microPost);
             $this->entityManager->flush();
 
-            return new RedirectResponse($this->router->generate('micro_post_index'));
+            return new RedirectResponse(
+                $this->router->generate('micro_post_index')
+            );
         }
         return new Response(
-            $this->twig->render('micro-post/add.html.twig', [
-                'form' => $form->createView()
-            ])
+            $this->twig->render(
+                'micro-post/add.html.twig',
+                [
+                    'form' => $form->createView()
+                ]
+            )
         );
     }
 
@@ -169,9 +198,16 @@ class MicroPostController
      */
     public function userPosts(User $userWithPosts)
     {
-        $html = $this->twig->render('micro-post/index.html.twig', [
-            'posts' => $userWithPosts->getPosts()
-        ]);
+        $html = $this->twig->render(
+            'micro-post/user-posts.html.twig',
+            [
+                'posts' => $this->microPostRepository->findBy(
+                    ['user' => $userWithPosts],
+                    ['time' => 'DESC']
+                ),
+                'user' => $userWithPosts
+            ]
+        );
 
         return new Response($html);
     }
@@ -183,8 +219,13 @@ class MicroPostController
      */
     public function post(MicroPost $microPost)
     {
-        return new Response($this->twig->render('micro-post/post.html.twig', [
-            'post' => $microPost
-        ])); 
+        return new Response(
+            $this->twig->render(
+                'micro-post/post.html.twig',
+                [
+                    'post' => $microPost
+                ]
+            )
+        );
     }
 }
