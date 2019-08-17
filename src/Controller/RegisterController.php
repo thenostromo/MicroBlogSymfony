@@ -3,6 +3,8 @@
 namespace App\Controller;
 
 use App\Event\UserRegisterEvent;
+use App\Repository\UserRepository;
+use App\Security\TokenGenerator;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Response;
@@ -22,7 +24,8 @@ class RegisterController extends Controller
     public function register(
         UserPasswordEncoderInterface $passwordEncoder,
         Request $request,
-        EventDispatcherInterface $eventDispatcher
+        EventDispatcherInterface $eventDispatcher,
+        TokenGenerator $tokenGenerator
     ) {
         $user = new User();
         $form = $this->createForm(UserType::class, $user);
@@ -35,6 +38,7 @@ class RegisterController extends Controller
             );
 
             $user->setPassword($password);
+            $user->setConfirmationToken($tokenGenerator->getRandomSecureToken(30));
             $entityManager = $this->getDoctrine()->getManager();
             $entityManager->persist($user);
             $entityManager->flush();
