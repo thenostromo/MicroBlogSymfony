@@ -72,13 +72,13 @@
                     response.json().then(function(value) {
                         document.getElementById('notification-count').innerText = value.count;
                     });
-                    setTimeout(fetchNotificationCount, 5000);
+                    setTimeout(fetchNotificationCount, 15000);
                 }).catch(function(reason) {
 
                 });
             }
 
-            fetchNotificationCount();
+            setTimeout(fetchNotificationCount, 10000);
         </script>
     {% else %}
 

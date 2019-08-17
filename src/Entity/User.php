@@ -107,6 +107,11 @@ class User implements AdvancedUserInterface, \Serializable
      */
     private $enabled;
 
+    /**
+     * @ORM\OneToOne(targetEntity="App\Entity\UserPreferences", cascade={"persist"})
+     */
+    private $preferences;
+
     public function __construct()
     {
         $this->roles = [
@@ -379,5 +384,21 @@ class User implements AdvancedUserInterface, \Serializable
     public function isEnabled()
     {
         return $this->enabled;
+    }
+
+    /**
+     * @return UserPreferences
+     */
+    public function getPreferences()
+    {
+        return $this->preferences;
+    }
+
+    /**
+     * @param UserPreferences $preferences
+     */
+    public function setPreferences($preferences): void
+    {
+        $this->preferences = $preferences;
     }
 }
