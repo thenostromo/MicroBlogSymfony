@@ -99,6 +99,9 @@ class User implements UserInterface, \Serializable
 
     public function __construct()
     {
+        $this->roles = [
+            self::ROLE_USER
+        ];
         $this->posts = new ArrayCollection();
         $this->followers = new ArrayCollection();
         $this->following = new ArrayCollection();
