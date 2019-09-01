@@ -13,11 +13,18 @@ class LocalSubscriber implements EventSubscriberInterface
      */
     private $defaultLocale;
 
-    public function __construct($defaultLocale = 'en')
+    /**
+     * LocalSubscriber constructor.
+     * @param string $defaultLocale
+     */
+    public function __construct(string $defaultLocale = 'en')
     {
         $this->defaultLocale = $defaultLocale;
     }
 
+    /**
+     * @return array
+     */
     public static function getSubscribedEvents()
     {
         return [
@@ -30,6 +37,9 @@ class LocalSubscriber implements EventSubscriberInterface
         ];
     }
 
+    /**
+     * @param GetResponseEvent $event
+     */
     public function onKernelRequest(GetResponseEvent $event)
     {
         $request = $event->getRequest();
@@ -41,7 +51,9 @@ class LocalSubscriber implements EventSubscriberInterface
         if ($locale = $request->attributes->get('_locale')) {
             $request->getSession()->set('_locale', $locale);
         } else {
-            $request->setLocale($request->getSession()->get('_locale', $this->defaultLocale));
+            $request->setLocale(
+                $request->getSession()->get('_locale', $this->defaultLocale)
+            );
         }
     }
 }

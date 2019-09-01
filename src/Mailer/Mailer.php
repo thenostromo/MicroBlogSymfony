@@ -10,6 +10,7 @@ class Mailer
      * @var \Swift_Mailer
      */
     private $mailer;
+
     /**
      * @var \Twig_Environment
      */
@@ -20,6 +21,12 @@ class Mailer
      */
     private $mailFrom;
 
+    /**
+     * Mailer constructor.
+     * @param \Swift_Mailer $mailer
+     * @param \Twig_Environment $twig
+     * @param string $mailFrom
+     */
     public function __construct(
         \Swift_Mailer $mailer,
         \Twig_Environment $twig,
@@ -30,11 +37,21 @@ class Mailer
         $this->mailFrom = $mailFrom;
     }
 
+    /**
+     * @param User $user
+     * @throws \Twig\Error\LoaderError
+     * @throws \Twig\Error\RuntimeError
+     * @throws \Twig\Error\SyntaxError
+     */
     public function sendConfirmationEmail(User $user)
     {
-        $body = $this->twig->render('email/registration.html.twig', [
-            'user' => $user
-        ]);
+        $body = $this->twig->render(
+            'email/registration.html.twig',
+            [
+                'user' => $user
+            ]
+        );
+
         $message = (new \Swift_Message())
             ->setSubject('Welcome to the micro-post app!')
             ->setFrom($this->mailFrom)

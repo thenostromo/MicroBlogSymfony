@@ -21,13 +21,16 @@ class UserPreferences
      */
     private $locale;
 
+    /**
+     * @return int|null
+     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
     /**
-     * @return mixed
+     * @return string
      */
     public function getLocale()
     {
@@ -35,11 +38,13 @@ class UserPreferences
     }
 
     /**
-     * @param mixed $locale
+     * @param string $locale
+     * @return UserPreferences
      */
-    public function setLocale($locale): void
+    public function setLocale($locale): UserPreferences
     {
         $this->locale = $locale;
+        return $this;
     }
 
 }

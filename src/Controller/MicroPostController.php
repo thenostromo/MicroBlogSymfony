@@ -2,230 +2,156 @@
 
 namespace App\Controller;
 
-use App\Entity\User;
-use App\Repository\UserRepository;
-use Symfony\Component\Form\FormFactoryInterface;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
-use Symfony\Component\HttpFoundation\Session\Flash\FlashBagInterface;
-use Doctrine\ORM\EntityManagerInterface;
-use App\Repository\MicroPostRepository;
 use App\Entity\MicroPost;
 use App\Form\MicroPostType;
-use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
-use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
+use App\Entity\User;
+use App\Manager\MicroPostManager;
+use App\Manager\UserManager;
 
-/**
- * @Route("/micro-post")
- */
-class MicroPostController 
+class MicroPostController extends AbstractController
 {
     /**
-     * @var \Twig_Environment
-     */
-    private $twig;
-    
-    /**
-     * @var MicroPostRepository
-     */
-    private $microPostRepository;
-
-    /**
-     * @var FormFactoryInterface
-     */
-    private $formFactory;
-
-    /**
-     * @var EntityManagerInterface
-     */
-    private $entityManager;
-
-    /**
-     * @var RouterInterface
-     */
-    private $router;
-
-    /**
-     * @var FlashBagInterface
-     */
-    private $flashBag;
-    /**
-     * @var AuthorizationCheckerInterface
-     */
-    private $authorizationChecker;
-
-    /**
-     * @param \Twig_Environment $twig
-     * @param MicroPostRepository $microPostRepository
-     * @param FormFactoryInterface $formFactory
-     * @param EntityManagerInterface $entityManager
-     * @param RouterInterface $router
-     * @param FlashBagInterface $flashBag
-     * @param AuthorizationCheckerInterface $authorizationChecker
-     */
-    public function __construct(
-        \Twig_Environment $twig, MicroPostRepository $microPostRepository,
-        FormFactoryInterface $formFactory, EntityManagerInterface $entityManager,
-        RouterInterface $router, FlashBagInterface $flashBag, AuthorizationCheckerInterface $authorizationChecker
-    ) {
-        $this->twig = $twig;
-        $this->microPostRepository = $microPostRepository;
-        $this->formFactory = $formFactory;
-        $this->entityManager = $entityManager;
-        $this->router = $router;
-        $this->flashBag = $flashBag;
-        $this->authorizationChecker = $authorizationChecker;
-    }
-
-    /**
      * @Route("/", name="micro_post_index")
+     *
+     * @param MicroPostManager $microPostManager
+     * @param UserManager $userManager
      * @return Response
      */
-    public function index(TokenStorageInterface $tokenStorage, UserRepository $userRepository)
+    public function index(MicroPostManager $microPostManager, UserManager $userManager)
     {
-        $currentUser = $tokenStorage->getToken()
-            ->getUser();
+        $currentUser = $this->getUser();
         $usersToFollow = [];
 
         if ($currentUser instanceof User) {
-            $posts = $this->microPostRepository->findAllByUsers(
+            $posts = $microPostManager->getMicroPostByUsers(
                 $currentUser->getFollowing()
             );
 
-            $usersToFollow = count($posts) === 0 ?
-                $userRepository->findAllWithMoreThan5PostsExceptUser($currentUser) : [];
-        } else {
-            $posts = $this->microPostRepository->findBy(
-                [],
-                ['time' => 'DESC']
+            $usersToFollow = $userManager->getUsersToFollow(
+                $currentUser,
+                $posts
             );
+        } else {
+            $posts = $microPostManager->getAll();
         }
-        return new Response(
-            $this->twig->render(
-                'micro-post/index.html.twig',
-                [
-                    'posts' => $posts,
-                    'usersToFollow' => $usersToFollow
-                ]
-            )
+        return $this->render(
+            'micro-post/index.html.twig',
+            [
+                'posts'         => $posts,
+                'usersToFollow' => $usersToFollow
+            ]
         );
     }
 
     /**
      * @Route("/edit/{id}", name="micro_post_edit")
      * @Security("is_granted('edit', microPost)", message="Access denied")
+     *
      * @param MicroPost $microPost
      * @param Request $request
      * @return Response
      */
     public function edit(MicroPost $microPost, Request $request)
     {
-        $form = $this->formFactory->create(MicroPostType::class, $microPost);
+        $form = $this->createForm(MicroPostType::class, $microPost);
+
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
-            $this->entityManager->flush();
+            $this->getDoctrine()->getManager()->flush();
 
-            return new RedirectResponse(
-                $this->router->generate('micro_post_index')
-            );
+            return $this->redirectToRoute('micro_post_index');
         }
-        return new Response(
-            $this->twig->render('micro-post/add.html.twig', [
+        return $this->render(
+            'micro-post/add.html.twig',
+            [
                 'form' => $form->createView()
-            ])
+            ]
         );
     }
 
     /**
      * @Route("/delete/{id}", name="micro_post_delete")
      * @Security("is_granted('delete', microPost)", message="Access denied")
+     *
      * @param MicroPost $microPost
+     * @param MicroPostManager $microPostManager
      * @return Response
      */
-    public function delete(MicroPost $microPost)
+    public function delete(MicroPost $microPost, MicroPostManager $microPostManager)
     {
-        $this->entityManager->remove($microPost);
-        $this->entityManager->flush();
+        $microPostManager->delete($microPost);
 
-        $this->flashBag->add('notice', 'Micro post was deleted');
+        $this->addFlash('notice', 'Micro post was deleted');
 
-        return new RedirectResponse(
-            $this->router->generate('micro_post_index')
-        );
+        return $this->redirectToRoute('micro_post_index');
     }
 
     /**
      * @Route("/add", name="micro_post_add")
      * @Security("is_granted('ROLE_USER')")
+     *
      * @param Request $request
-     * @param TokenStorageInterface $tokenStorage
-     * @return Response
+     * @param MicroPostManager $microPostManager
+     * @return RedirectResponse|Response
      */
-    public function add(Request $request, TokenStorageInterface $tokenStorage)
+    public function add(Request $request, MicroPostManager $microPostManager)
     {
-        $user = $tokenStorage->getToken()->getUser();
+        $user = $this->getUser();
 
         $microPost = new MicroPost();
         $microPost->setUser($user);
 
-        $form = $this->formFactory->create(MicroPostType::class, $microPost);
+        $form = $this->createForm(MicroPostType::class, $microPost);
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
-            $this->entityManager->persist($microPost);
-            $this->entityManager->flush();
+            $microPostManager->update($microPost);
 
-            return new RedirectResponse(
-                $this->router->generate('micro_post_index')
-            );
+            return $this->redirectToRoute('micro_post_index');
         }
-        return new Response(
-            $this->twig->render(
-                'micro-post/add.html.twig',
-                [
-                    'form' => $form->createView()
-                ]
-            )
+        return $this->render(
+            'micro-post/add.html.twig',
+            [
+                'form' => $form->createView()
+            ]
         );
     }
 
     /**
      * @Route("/user/{username}", name="micro_post_user")
+     *
+     * @param User $userWithPosts
+     * @param MicroPostManager $microPostManager
+     * @return Response
      */
-    public function userPosts(User $userWithPosts)
+    public function userPosts(User $userWithPosts, MicroPostManager $microPostManager)
     {
-        $html = $this->twig->render(
+        return $this->render(
             'micro-post/user-posts.html.twig',
             [
-                'posts' => $this->microPostRepository->findBy(
-                    ['user' => $userWithPosts],
-                    ['time' => 'DESC']
-                ),
+                'posts' => $microPostManager->getAllByUser($userWithPosts),
                 'user' => $userWithPosts
             ]
         );
-
-        return new Response($html);
     }
 
     /**
-     * @Route("/{id}", name="micro_post_post")
+     * @Route("/micro-post/{id}", name="micro_post_post")
      * @param MicroPost $microPost
      * @return Response
      */
     public function post(MicroPost $microPost)
     {
-        return new Response(
-            $this->twig->render(
-                'micro-post/post.html.twig',
-                [
-                    'post' => $microPost
-                ]
-            )
+        return $this->render(
+            'micro-post/post.html.twig',
+            [
+                'post' => $microPost
+            ]
         );
     }
 }

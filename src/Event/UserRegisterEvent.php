@@ -14,6 +14,10 @@ class UserRegisterEvent extends Event
      */
     private $registeredUser;
 
+    /**
+     * UserRegisterEvent constructor.
+     * @param User $registeredUser
+     */
     public function __construct(User $registeredUser)
     {
         $this->registeredUser = $registeredUser;

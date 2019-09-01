@@ -15,11 +15,18 @@ use Symfony\Bridge\Doctrine\RegistryInterface;
  */
 class UserRepository extends ServiceEntityRepository
 {
+    /**
+     * UserRepository constructor.
+     * @param RegistryInterface $registry
+     */
     public function __construct(RegistryInterface $registry)
     {
         parent::__construct($registry, User::class);
     }
 
+    /**
+     * @return User[]
+     */
     public function findAllWithMoreThan5Posts()
     {
         return $this->getFindAllWithMoreThan5PostsQuery()
@@ -27,6 +34,10 @@ class UserRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /**
+     * @param User $user
+     * @return User[]
+     */
     public function findAllWithMoreThan5PostsExceptUser(User $user)
     {
         return $this->getFindAllWithMoreThan5PostsQuery()
@@ -36,6 +47,9 @@ class UserRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /**
+     * @return QueryBuilder
+     */
     private function getFindAllWithMoreThan5PostsQuery(): QueryBuilder
     {
         $qb = $this->createQueryBuilder('u');
@@ -44,33 +58,4 @@ class UserRepository extends ServiceEntityRepository
             ->groupBy('u')
             ->having('count(mp) > 5');
     }
-
-    // /**
-    //  * @return User[] Returns an array of User objects
-    //  */
-    /*
-    public function findByExampleField($value)
-    {
-        return $this->createQueryBuilder('u')
-            ->andWhere('u.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('u.id', 'ASC')
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult()
-        ;
-    }
-    */
-
-    /*
-    public function findOneBySomeField($value): ?User
-    {
-        return $this->createQueryBuilder('u')
-            ->andWhere('u.exampleField = :val')
-            ->setParameter('val', $value)
-            ->getQuery()
-            ->getOneOrNullResult()
-        ;
-    }
-    */
 }

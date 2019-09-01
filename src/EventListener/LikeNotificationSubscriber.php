@@ -52,7 +52,7 @@ class LikeNotificationSubscriber implements EventSubscriber
             $notification = new LikeNotification();
             $notification->setUser($microPost->getUser());
             $notification->setMicroPost($microPost);
-            $notification->setLikeBy(reset($insertDiff));
+            $notification->setLikedBy(reset($insertDiff));
 
             $em->persist($notification);
 

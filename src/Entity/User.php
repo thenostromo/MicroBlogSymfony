@@ -176,7 +176,7 @@ class User implements AdvancedUserInterface, \Serializable
 
     public function eraseCredentials()
     {
-
+        //
     }
 
     /**
@@ -193,7 +193,7 @@ class User implements AdvancedUserInterface, \Serializable
     }
 
     /**
-     * @return array
+     * @param string $serialized
      */
     public function unserialize($serialized)
     {
@@ -205,34 +205,31 @@ class User implements AdvancedUserInterface, \Serializable
 
     /**
      * @param string $username
-     * @return self
+     * @return User
      */
-    public function setUsername(string $username): self
+    public function setUsername(string $username): User
     {
         $this->username = $username;
-
         return $this;
     }
 
     /**
      * @param string $password
-     * @return self
+     * @return User
      */
-    public function setPassword(string $password): self
+    public function setPassword(string $password): User
     {
         $this->password = $password;
-
         return $this;
     }
 
     /**
      * @param string $plainPassword
-     * @return self
+     * @return User
      */
-    public function setPlainPassword(string $plainPassword): self
+    public function setPlainPassword(string $plainPassword): User
     {
         $this->plainPassword = $plainPassword;
-
         return $this;
     }
 
@@ -254,12 +251,11 @@ class User implements AdvancedUserInterface, \Serializable
 
     /**
      * @param string $email
-     * @return self
+     * @return User
      */
-    public function setEmail(string $email): self
+    public function setEmail(string $email): User
     {
         $this->email = $email;
-
         return $this;
     }
 
@@ -273,12 +269,11 @@ class User implements AdvancedUserInterface, \Serializable
 
     /**
      * @param string $fullName
-     * @return self
+     * @return User
      */
-    public function setFullName(string $fullName): self
+    public function setFullName(string $fullName): User
     {
         $this->fullName = $fullName;
-
         return $this;
     }
 
@@ -292,17 +287,16 @@ class User implements AdvancedUserInterface, \Serializable
 
     /**
      * @param ArrayCollection $posts
-     * @return self
+     * @return User
      */
-    public function setPosts($posts): self
+    public function setPosts($posts): User
     {
         $this->posts = $posts;
-
         return $this;
     }
 
     /**
-     * @return mixed
+     * @return ArrayCollection
      */
     public function getFollowers()
     {
@@ -310,13 +304,16 @@ class User implements AdvancedUserInterface, \Serializable
     }
 
     /**
-     * @return mixed
+     * @return ArrayCollection
      */
     public function getFollowing()
     {
         return $this->following;
     }
 
+    /**
+     * @param User $userToFollow
+     */
     public function follow(User $userToFollow)
     {
         if ($this->getFollowing()->contains($userToFollow)) {
@@ -335,7 +332,7 @@ class User implements AdvancedUserInterface, \Serializable
     }
 
     /**
-     * @return mixed
+     * @return string
      */
     public function getConfirmationToken()
     {
@@ -343,15 +340,17 @@ class User implements AdvancedUserInterface, \Serializable
     }
 
     /**
-     * @param mixed $confirmationToken
+     * @param string $confirmationToken
+     * @return User
      */
-    public function setConfirmationToken($confirmationToken): void
+    public function setConfirmationToken($confirmationToken): User
     {
         $this->confirmationToken = $confirmationToken;
+        return $this;
     }
 
     /**
-     * @return mixed
+     * @return bool
      */
     public function getEnabled()
     {
@@ -359,28 +358,42 @@ class User implements AdvancedUserInterface, \Serializable
     }
 
     /**
-     * @param mixed $enabled
+     * @param bool $enabled
+     * @return User
      */
-    public function setEnabled($enabled): void
+    public function setEnabled(bool $enabled): User
     {
         $this->enabled = $enabled;
+        return $this;
     }
 
+    /**
+     * @return bool
+     */
     public function isAccountNonExpired()
     {
         return true;
     }
 
+    /**
+     * @return bool
+     */
     public function isAccountNonLocked()
     {
         return true;
     }
 
+    /**
+     * @return bool
+     */
     public function isCredentialsNonExpired()
     {
         return true;
     }
 
+    /**
+     * @return bool
+     */
     public function isEnabled()
     {
         return $this->enabled;
@@ -396,9 +409,11 @@ class User implements AdvancedUserInterface, \Serializable
 
     /**
      * @param UserPreferences $preferences
+     * @return User
      */
-    public function setPreferences($preferences): void
+    public function setPreferences($preferences): User
     {
         $this->preferences = $preferences;
+        return $this;
     }
 }

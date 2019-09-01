@@ -18,11 +18,20 @@ class MicroPostVoter extends Voter
      */
     private $accessDecisionManager;
 
+    /**
+     * MicroPostVoter constructor.
+     * @param AccessDecisionManagerInterface $accessDecisionManager
+     */
     public function __construct(AccessDecisionManagerInterface $accessDecisionManager)
     {
         $this->accessDecisionManager = $accessDecisionManager;
     }
 
+    /**
+     * @param string $attribute
+     * @param MicroPost $subject
+     * @return bool
+     */
     protected function supports($attribute, $subject)
     {
         if (!in_array($attribute, [self::EDIT, self::DELETE])) {
@@ -34,8 +43,16 @@ class MicroPostVoter extends Voter
         return true;
     }
 
+    /**
+     * @param string $attribute
+     * @param MicroPost $subject
+     * @param TokenInterface $token
+     * @return bool
+     */
     protected function voteOnAttribute(
-        $attribute, $subject, TokenInterface $token
+        $attribute,
+        $subject,
+        TokenInterface $token
     ) {
         if ($this->accessDecisionManager->decide($token, [User::ROLE_ADMIN])) {
             return true;

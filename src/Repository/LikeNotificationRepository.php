@@ -15,6 +15,10 @@ use Symfony\Bridge\Doctrine\RegistryInterface;
  */
 class LikeNotificationRepository extends ServiceEntityRepository
 {
+    /**
+     * LikeNotificationRepository constructor.
+     * @param RegistryInterface $registry
+     */
     public function __construct(RegistryInterface $registry)
     {
         parent::__construct($registry, LikeNotification::class);

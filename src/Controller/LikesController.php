@@ -2,21 +2,23 @@
 
 namespace App\Controller;
 
-use App\Entity\MicroPost;
-use App\Entity\User;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use App\Entity\MicroPost;
+use App\Entity\User;
 
 /**
  * @Route("/likes")
  */
-class LikesController extends Controller
+class LikesController extends AbstractController
 {
     /**
      * @Route("/like/{id}", name="likes_like")
+     *
      * @param MicroPost $microPost
+     * @return JsonResponse
      */
     public function like(MicroPost $microPost)
     {
@@ -37,7 +39,9 @@ class LikesController extends Controller
 
     /**
      * @Route("/unlike/{id}", name="likes_unlike")
+     *
      * @param MicroPost $microPost
+     * @return JsonResponse
      */
     public function unlike(MicroPost $microPost)
     {

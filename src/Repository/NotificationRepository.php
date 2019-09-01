@@ -15,11 +15,20 @@ use Symfony\Bridge\Doctrine\RegistryInterface;
  */
 class NotificationRepository extends ServiceEntityRepository
 {
+    /**
+     * NotificationRepository constructor.
+     * @param RegistryInterface $registry
+     */
     public function __construct(RegistryInterface $registry)
     {
         parent::__construct($registry, Notification::class);
     }
 
+    /**
+     * @param User $user
+     * @return int
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
     public function findUnseenByUser(User $user)
     {
         $qb = $this->createQueryBuilder('n');
@@ -31,6 +40,9 @@ class NotificationRepository extends ServiceEntityRepository
             ->getSingleScalarResult();
     }
 
+    /**
+     * @param User $user
+     */
     public function markAllAsReadByUser(User $user)
     {
         $qb = $this->createQueryBuilder('n');

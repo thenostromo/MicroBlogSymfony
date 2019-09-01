@@ -16,14 +16,22 @@ use Symfony\Component\Validator\Constraints\IsTrue;
 
 class UserType extends AbstractType
 {
+    /**
+     * @param FormBuilderInterface $builder
+     * @param array $options
+     */
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder->add('username', TextType::class)  
             ->add('email', EmailType::class)
             ->add('plainPassword', RepeatedType::class, [
                 'type' => PasswordType::class,
-                'first_options' => ['label' => 'Password'],
-                'second_options' => ['label' => 'Repeated password']
+                'first_options' => [
+                    'label' => 'Password'
+                ],
+                'second_options' => [
+                    'label' => 'Repeated password'
+                ]
             ])
             ->add('fullName', TextType::class)  
             ->add('termsAgreed', CheckboxType::class, [
@@ -34,6 +42,9 @@ class UserType extends AbstractType
             ->add('Register', SubmitType::class);
     }
 
+    /**
+     * @param OptionsResolver $resolver
+     */
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults([

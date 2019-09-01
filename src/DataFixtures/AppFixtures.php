@@ -54,10 +54,10 @@ class AppFixtures extends Fixture
         'How was your day?'
     ];
 
-     private const LANGUAGES = [
-         'en',
-         'fr'
-     ];
+    const LANGUAGES = [
+     'en',
+     'fr'
+    ];
 
     /**
      * @var UserPasswordEncoderInterface $passwordEncoder
@@ -74,6 +74,7 @@ class AppFixtures extends Fixture
 
     /**
      * @param ObjectManager $manager
+     * @throws \Exception
      */
     public function load(ObjectManager $manager)
     {
@@ -83,20 +84,31 @@ class AppFixtures extends Fixture
 
     /**
      * @param ObjectManager $manager
+     * @throws \Exception
      */
     private function loadMicroPosts(ObjectManager $manager)
     {
         for ($i = 0; $i < 30; $i++) {
             $microPost = new MicroPost();
             $microPost->setText(
-                self::POST_TEXT[rand(0, (count(self::POST_TEXT) - 1))]
+                self::POST_TEXT[
+                    rand(
+                        0,
+                        (count(self::POST_TEXT) - 1)
+                    )
+                ]
             );
             $date = new \DateTime();
             $date->modify('-' . rand(0, 10) . ' day');
             $microPost->setTime($date);
             $microPost->setUser(
                 $this->getReference(
-                    self::USERS[rand(0, (count(self::USERS) - 1))]['username']
+                    self::USERS[
+                        rand(
+                            0,
+                            (count(self::USERS) - 1)
+                        )
+                    ]['username']
                 )
             );
             $manager->persist($microPost);
