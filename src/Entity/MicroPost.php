@@ -73,7 +73,7 @@ class MicroPost
      * @param string $text
      * @return MicroPost
      */
-    public function setText(string $text): self
+    public function setText(string $text): MicroPost
     {
         $this->text = $text;
 
@@ -92,7 +92,7 @@ class MicroPost
      * @param \DateTimeInterface $text
      * @return MicroPost
      */
-    public function setTime(\DateTimeInterface $time): self
+    public function setTime(\DateTimeInterface $time): MicroPost
     {
         $this->time = $time;
 
@@ -101,10 +101,13 @@ class MicroPost
 
     /**
      * @ORM\PrePersist()
+     * @return MicroPost
+     * @throws \Exception
      */
-    public function setTimeOnPersist(): void
+    public function setTimeOnPersist(): MicroPost
     {
         $this->time = new \DateTime();
+        return $this;
     }
 
     /**
@@ -119,7 +122,7 @@ class MicroPost
      * @param User $user
      * @return MicroPost
      */
-    public function setUser($user): self
+    public function setUser($user): MicroPost
     {
         $this->user = $user;
         return $this;
@@ -133,6 +136,9 @@ class MicroPost
         return $this->likedBy;
     }
 
+    /**
+     * @param User $user
+     */
     public function like(User $user)
     {
         if ($this->likedBy->contains($user)) {

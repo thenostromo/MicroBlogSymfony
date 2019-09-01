@@ -2,27 +2,16 @@
 
 namespace App\Controller;
 
+use App\Manager\UserManager;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 use Symfony\Component\HttpFoundation\Response;
 
-class SecurityController 
+class SecurityController extends AbstractController
 {
-    /**
-     * @var \Twig_Environment
-     */
-    private $twig;
-
-    /**
-     * @var \Twig_Environment $twig
-     */
-    public function __construct(\Twig_Environment $twig)
-    {
-        $this->twig = $twig;
-    }
-
     /**
      * @Route("/login", name="security_login")
      * @param AuthenticationUtils $authenticationUtils
@@ -30,13 +19,13 @@ class SecurityController
      */
     public function login(AuthenticationUtils $authenticationUtils)
     {
-        return new Response($this->twig->render(
+        return $this->render(
             'security/login.html.twig',
             [
                 'last_username' => $authenticationUtils->getLastUsername(),
                 'error' => $authenticationUtils->getLastAuthenticationError()
             ]
-        ));
+        );
     }
 
     /**
@@ -44,32 +33,27 @@ class SecurityController
      */
     public function logout()
     {
-
+        //
     }
 
     /**
      * @Route("/confirm/{token}", name="security_confirm")
+     * @param string $token
+     * @param UserManager $userManager
+     * @return Response
      */
-    public function confirm(
-        string $token,
-        UserRepository $userRepository,
-        EntityManagerInterface $entityManager
-    ) {
-        $user = $userRepository->findOneBy([
-            'confirmationToken' => $token
-        ]);
+    public function confirm(string $token, UserManager $userManager)
+    {
+        $user = $userManager->getUserByConfirmToken($token);
         if ($user !== null) {
-            $user->setEnabled(true);
-            $user->setConfirmationToken('');
-
-            $entityManager->flush();
+            $userManager->activeUser($user);
         }
 
-        return new Response($this->twig->render(
+        return $this->render(
             'security/confirmation.html.twig',
             [
                 'user' => $user
             ]
-        ));
+        );
     }
 }

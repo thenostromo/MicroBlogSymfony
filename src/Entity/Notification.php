@@ -35,7 +35,7 @@ abstract class Notification
     }
 
     /**
-     * @return mixed
+     * @return string
      */
     public function getId()
     {
@@ -43,7 +43,7 @@ abstract class Notification
     }
 
     /**
-     * @return mixed
+     * @return User
      */
     public function getUser()
     {
@@ -51,15 +51,17 @@ abstract class Notification
     }
 
     /**
-     * @param mixed $user
+     * @param User $user
+     * @return Notification
      */
-    public function setUser($user): void
+    public function setUser(User $user): Notification
     {
         $this->user = $user;
+        return $this;
     }
 
     /**
-     * @return mixed
+     * @return bool
      */
     public function getSeen()
     {
@@ -67,10 +69,12 @@ abstract class Notification
     }
 
     /**
-     * @param mixed $seen
+     * @param bool $seen
+     * @return Notification
      */
-    public function setSeen($seen): void
+    public function setSeen(bool $seen): Notification
     {
         $this->seen = $seen;
+        return $this;
     }
 }

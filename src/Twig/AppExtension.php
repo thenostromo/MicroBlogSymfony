@@ -13,18 +13,18 @@ class AppExtension extends AbstractExtension implements GlobalsInterface
      */
     private $locale;
 
+    /**
+     * AppExtension constructor.
+     * @param string $locale
+     */
     public function __construct(string $locale)
     {
         $this->locale = $locale;
     }
 
-    public function getFilters()
-    {
-        return [
-            new TwigFilter('price', [$this, 'priceFilter'])
-        ];
-    }
-
+    /**
+     * @return array
+     */
     public function getGlobals()
     {
         return [
@@ -32,11 +32,9 @@ class AppExtension extends AbstractExtension implements GlobalsInterface
         ];
     }
 
-    public function priceFilter($number)
-    {
-        return '$'.number_format($number, 2, '.', ',');
-    }
-
+    /**
+     * @return array|\Twig\TwigTest[]
+     */
     public function getTests()
     {
         return [

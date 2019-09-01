@@ -20,34 +20,38 @@ class LikeNotification extends Notification
     private $likedBy;
 
     /**
-     * @return mixed
+     * @return MicroPost
      */
-    public function getMicroPost()
+    public function getMicroPost(): MicroPost
     {
         return $this->microPost;
     }
 
     /**
-     * @param mixed $microPost
+     * @param MicroPost $microPost
+     * @return LikeNotification
      */
-    public function setMicroPost($microPost): void
+    public function setMicroPost(MicroPost $microPost): LikeNotification
     {
         $this->microPost = $microPost;
+        return $this;
     }
 
     /**
-     * @return mixed
+     * @return User
      */
-    public function getLikedBy()
+    public function getLikedBy(): User
     {
         return $this->likedBy;
     }
 
     /**
-     * @param mixed $likedBy
+     * @param User $likedBy
+     * @return LikeNotification
      */
-    public function setLikedBy($likedBy): void
+    public function setLikedBy(User $likedBy): LikeNotification
     {
         $this->likedBy = $likedBy;
+        return $this;
     }
 }

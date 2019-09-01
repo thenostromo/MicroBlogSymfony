@@ -7,6 +7,9 @@ use PHPUnit\Framework\TestCase;
 
 class TokenGeneratorTest extends TestCase
 {
+    /**
+     * @throws \Exception
+     */
     public function testTokenGenerator()
     {
         $tokenGen = new TokenGenerator();

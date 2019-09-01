@@ -3,7 +3,7 @@
 namespace App\Controller;
 
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use App\Entity\User;
@@ -12,11 +12,12 @@ use App\Entity\User;
  * @Security("is_granted('ROLE_USER')")
  * @Route("/following")
  */
-class FollowingController extends Controller
+class FollowingController extends AbstractController
 {
     /**
      * @Route("/follow/{id}", name="following_follow")
-     * @param User $userToUnfollow
+     *
+     * @param User $userToFollow
      * @return RedirectResponse
      */
     public function follow(User $userToFollow)
@@ -27,19 +28,20 @@ class FollowingController extends Controller
         if ($userToFollow->getId() !== $currentUser->getId()) {
             $currentUser->follow($userToFollow);
 
-            $this->getDoctrine()
-                ->getManager()
-                ->flush();
+            $this->getDoctrine()->getManager()->flush();
         }
 
         return $this->redirectToRoute(
             'micro_post_user',
-            ['username' => $userToFollow->getUsername()]
+            [
+                'username' => $userToFollow->getUsername()
+            ]
         );
     }
 
     /**
      * @Route("/unfollow/{id}", name="following_unfollow")
+     *
      * @param User $userToUnfollow
      * @return RedirectResponse
      */
@@ -47,16 +49,15 @@ class FollowingController extends Controller
     {
         /** @var User $currentUser */
         $currentUser = $this->getUser();
-        $currentUser->getFollowing()
-            ->removeElement($userToUnfollow);
+        $currentUser->getFollowing()->removeElement($userToUnfollow);
 
-        $this->getDoctrine()
-            ->getManager()
-            ->flush();
+        $this->getDoctrine()->getManager()->flush();
 
         return $this->redirectToRoute(
             'micro_post_user',
-            ['username' => $userToUnfollow->getUsername()]
+            [
+                'username' => $userToUnfollow->getUsername()
+            ]
         );
     }
 }
